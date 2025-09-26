@@ -1,0 +1,7 @@
+.git
+.gitignore
+README.md
+k8s/
+argocd-app.yaml
+scripts/
+*.md
