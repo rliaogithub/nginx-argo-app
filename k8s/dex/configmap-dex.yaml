@@ -16,7 +16,7 @@ data:
     enablePasswordDB: true
     staticPasswords:
     - email: "ron@example.com"
-      hash: ""$2b$10$wJi05KxiEL9flhGE6zYKq.5IOWun8EenzfiLK7cxJiL7SiWXc9/Ei"
+      hash: "$2b$10$wJi05KxiEL9flhGE6zYKq.5IOWun8EenzfiLK7cxJiL7SiWXc9/Ei"
       username: "ron"
       userID: "0001"
 
