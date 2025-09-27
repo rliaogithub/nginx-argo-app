@@ -1,0 +1,215 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: support-console-bff-config
+  namespace: support-console
+data:
+  # Server configuration
+  PORT: "8080"
+  HEALTH_PORT: "8082"
+  # Database configuration (adjust as needed)
+  DATABASE_URL: "postgresql://user:password@postgres:5432/support_console"
+  # Redis configuration (if needed)
+  REDIS_URL: "redis://redis:6379"
+  # Logging configuration
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  # CORS configuration
+  CORS_ORIGINS: "http://support-console-svc.support-console.svc.cluster.local:8080,https://support-console.local"
+  # JWT configuration (replace with actual secrets in production)
+  JWT_SECRET: "your-jwt-secret-key-replace-in-production"
+  JWT_EXPIRES_IN: "1h"
+  # API rate limiting
+  RATE_LIMIT_WINDOW: "15"
+  RATE_LIMIT_MAX: "100"
+  # Environment
+  NODE_ENV: "production"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: support-console-bff-secrets
+  namespace: support-console
+type: Opaque
+data:
+  # Base64 encoded secrets (replace with actual values)
+  # echo -n "your-secret-value" | base64
+  database-password: cGFzc3dvcmQ= # password
+  jwt-secret: eW91ci1qd3Qtc2VjcmV0LWtleS1yZXBsYWNlLWluLXByb2R1Y3Rpb24= # your-jwt-secret-key-replace-in-production
+  api-key: eW91ci1hcGkta2V5 # your-api-key
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: support-console-bff-sa
+  namespace: support-console
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: support-console-bff
+  namespace: support-console
+  labels:
+    app: support-console-bff
+    component: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: support-console-bff
+  template:
+    metadata:
+      labels:
+        app: support-console-bff
+        component: backend
+    spec:
+      serviceAccountName: support-console-bff-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: support-console-bff
+          # Replace with your actual BFF image
+          image: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff:2.2.0
+          imagePullPolicy: Always
+          command: ["node", "server.js"]
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 8082
+              name: health
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: support-console-bff-config
+                  key: PORT
+            - name: HEALTH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: support-console-bff-config
+                  key: HEALTH_PORT
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: support-console-bff-secrets
+                  key: database-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: support-console-bff-secrets
+                  key: jwt-secret
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: support-console-bff-secrets
+                  key: api-key
+          envFrom:
+            - configMapRef:
+                name: support-console-bff-config
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 30
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: app-logs
+              mountPath: /app/logs
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: app-cache
+              mountPath: /app/.cache
+      volumes:
+        - name: app-logs
+          emptyDir: {}
+        - name: tmp-volume
+          emptyDir: {}
+        - name: app-cache
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: support-console-bff-svc
+  namespace: support-console
+  labels:
+    app: support-console-bff
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: health
+      port: 8082
+      targetPort: 8082
+      protocol: TCP
+  selector:
+    app: support-console-bff
+
+---
+# HorizontalPodAutoscaler for BFF (optional)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: support-console-bff-hpa
+  namespace: support-console
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: support-console-bff
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

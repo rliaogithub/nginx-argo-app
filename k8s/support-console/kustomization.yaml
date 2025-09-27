@@ -1,0 +1,68 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: support-console
+
+resources:
+  - support-console-deployment.yaml
+  - support-console-bff-deployment.yaml
+
+# Common labels for all resources
+commonLabels:
+  project: nginx-argo-app
+  environment: local
+
+# Patches for local environment customization
+patchesStrategicMerge:
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: support-console
+      namespace: support-console
+    spec:
+      template:
+        spec:
+          containers:
+          - name: support-console
+            env:
+            - name: ENVIRONMENT
+              value: "local"
+
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: support-console-bff
+      namespace: support-console
+    spec:
+      template:
+        spec:
+          containers:
+          - name: support-console-bff
+            env:
+            - name: ENVIRONMENT
+              value: "local"
+
+# Images can be customized here
+images:
+  - name: nginx:1.24-alpine
+    newName: nginx
+    newTag: 1.24-alpine
+  - name: node:18-alpine
+    newName: node
+    newTag: 18-alpine
+
+# Add any additional configuration
+configMapGenerator:
+  - name: support-console-env
+    env: support-console.env
+    options:
+      disableNameSuffixHash: true
+
+# Add resource limits for local development
+replicas:
+  - name: support-console
+    count: 1
+  - name: support-console-bff
+    count: 1
