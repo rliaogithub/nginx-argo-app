@@ -24,7 +24,7 @@ data:
     staticClients:
     - id: oauth2-proxy
       name: "OAuth2 Proxy (Local)"
-      secret: "REPLACE_ME_CLIENT_SECRET"      # must match the Secret in oauth2-proxy
+      secret: "G5pYCYuon3LFdMltKxmJPJwpDpbatdL9" # must match the Secret in oauth2-proxy
       redirectURIs:
       - "http://oauth2-proxy.local/oauth2/callback"
 
