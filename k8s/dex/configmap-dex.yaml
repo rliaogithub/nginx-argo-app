@@ -12,7 +12,7 @@ data:
     web:
       http: 0.0.0.0:5556
 
-    # Static test user (bcrypt hash for password 'Password123!')
+    # Static test user
     enablePasswordDB: true
     staticPasswords:
     - email: "ron@example.com"
