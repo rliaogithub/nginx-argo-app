@@ -9,4 +9,4 @@ spec:
   # Keeps things compatible whether or not you enforce STRICT mTLS later.
   trafficPolicy:
     tls:
-      mode: ISTIO_MUTUAL
+      mode: DISABLE
