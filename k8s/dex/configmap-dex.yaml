@@ -12,11 +12,11 @@ data:
     web:
       http: 0.0.0.0:5556
 
-    # Static test user
+    # Static test user, bcrypt hash for 'Password123!'
     enablePasswordDB: true
     staticPasswords:
     - email: "ron@example.com"
-      hash: "$2a$10$L9AIEUWyRnH1d3lwJGxCuOGtnrZdDQ./Ib8eSQzbvnpXu3xM7CgR2" # bcrypt hash for 'Password123!'
+      hash: ""$2b$10$wJi05KxiEL9flhGE6zYKq.5IOWun8EenzfiLK7cxJiL7SiWXc9/Ei"
       username: "ron"
       userID: "0001"
 
@@ -24,9 +24,9 @@ data:
     staticClients:
     - id: oauth2-proxy
       name: "OAuth2 Proxy (Local)"
-      secret: "G5pYCYuon3LFdMltKxmJPJwpDpbatdL9" # must match the Secret in oauth2-proxy
+      secret: "G5pYCYuon3LFdMltKxmJPJwpDpbatdL9"
       redirectURIs:
       - "http://oauth2-proxy.local/oauth2/callback"
 
     oauth2:
-      skipApprovalScreen: true
+      skipApprovalScreen: false
