@@ -1,0 +1,16 @@
+# k8s/istio/gateway.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: nginx-gw
+  namespace: default
+spec:
+  selector:
+    istio: ingressgateway            # targets istio-ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - nginx.istio.local

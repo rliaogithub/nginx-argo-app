@@ -1,0 +1,17 @@
+# k8s/istio/virtualservice.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  hosts:
+    - nginx.istio.local
+  gateways:
+    - nginx-gw
+  http:
+    - route:
+        - destination:
+            host: nginx.default.svc.cluster.local
+            port:
+              number: 80

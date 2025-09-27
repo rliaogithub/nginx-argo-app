@@ -1,0 +1,12 @@
+# k8s/istio/destinationrule.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  host: nginx.default.svc.cluster.local
+  # Keeps things compatible whether or not you enforce STRICT mTLS later.
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

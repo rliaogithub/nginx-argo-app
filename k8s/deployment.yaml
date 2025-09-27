@@ -5,11 +5,16 @@ metadata:
   name: nginx
 spec:
   replicas: 2
-  selector: { matchLabels: { app: nginx } }
+  selector:
+    matchLabels:
+      app: nginx
   template:
-    metadata: { labels: { app: nginx } }
+    metadata:
+      labels:
+        app: nginx
     spec:
       containers:
         - name: nginx
           image: nginx:1.27-alpine
-          ports: [{ containerPort: 80 }]
+          ports:
+            - containerPort: 80
