@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dex-config
+  namespace: default
+data:
+  config.yaml: |
+    issuer: "http://dex.istio.local/dex"
+    storage:
+      type: memory
+
+    web:
+      http: 0.0.0.0:5556
+
+    # Static test user (bcrypt hash for password 'Password123!')
+    enablePasswordDB: true
+    staticPasswords:
+    - email: "ron@example.com"
+      hash: "$2a$10$CwTycUXWue0Thq9StjUM0uJ8dAu5G3XcQ9g6wA6Gpf5e6JxTt5GLa" # change for your real test; this is just an example
+      username: "ron"
+      userID: "0001"
+
+    # OAuth2-Proxy client
+    staticClients:
+    - id: oauth2-proxy
+      name: "OAuth2 Proxy (Local)"
+      secret: "REPLACE_ME_CLIENT_SECRET"      # must match the Secret in oauth2-proxy
+      redirectURIs:
+      - "http://oauth2-proxy.local/oauth2/callback"
+
+    oauth2:
+      skipApprovalScreen: true

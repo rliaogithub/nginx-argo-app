@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: dex
+  namespace: default
+spec:
+  host: dex.default.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE

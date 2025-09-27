@@ -1,0 +1,8 @@
+resources:
+  - namespace.yaml
+  - configmap-dex.yaml
+  - deployment.yaml
+  - service.yaml
+  - virtualservice.yaml
+  - destinationrule.yaml
+namespace: default

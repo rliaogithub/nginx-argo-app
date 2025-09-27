@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: oauth2-proxy
+  namespace: default
+spec:
+  host: oauth2-proxy.default.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE

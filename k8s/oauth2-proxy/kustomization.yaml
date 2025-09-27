@@ -1,0 +1,8 @@
+resources:
+  - namespace.yaml
+  - secret-oauth2-proxy.yaml
+  - deployment.yaml
+  - service.yaml
+  - virtualservice.yaml
+  - destinationrule.yaml
+namespace: default

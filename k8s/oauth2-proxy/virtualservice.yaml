@@ -1,17 +1,16 @@
-# k8s/istio/virtualservice.yaml
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: nginx
+  name: oauth2-proxy
   namespace: default
 spec:
   hosts:
-    - nginx.istio.local
+    - oauth2-proxy.local
   gateways:
-    - nginx-gw
+    - app-gateway
   http:
     - route:
         - destination:
-            host: nginx.default.svc.cluster.local
+            host: oauth2-proxy.default.svc.cluster.local
             port:
-              number: 80
+              number: 4180
