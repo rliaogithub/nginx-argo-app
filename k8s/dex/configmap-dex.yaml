@@ -16,7 +16,7 @@ data:
     enablePasswordDB: true
     staticPasswords:
     - email: "ron@example.com"
-      hash: "$2a$10$CwTycUXWue0Thq9StjUM0uJ8dAu5G3XcQ9g6wA6Gpf5e6JxTt5GLa" # change for your real test; this is just an example
+      hash: "$2a$10$L9AIEUWyRnH1d3lwJGxCuOGtnrZdDQ./Ib8eSQzbvnpXu3xM7CgR2" # bcrypt hash for 'Password123!'
       username: "ron"
       userID: "0001"
 
