@@ -8,21 +8,14 @@ data:
   # Server configuration
   PORT: "8080"
   HEALTH_PORT: "8082"
-  # Database configuration (adjust as needed)
-  DATABASE_URL: "postgresql://user:password@postgres:5432/support_console"
-  # Redis configuration (if needed)
-  REDIS_URL: "redis://redis:6379"
   # Logging configuration
   LOG_LEVEL: "info"
   LOG_FORMAT: "json"
   # CORS configuration
   CORS_ORIGINS: "http://support-console-svc.support-console.svc.cluster.local:8080,https://support-console.local"
-  # JWT configuration (replace with actual secrets in production)
-  JWT_SECRET: "your-jwt-secret-key-replace-in-production"
-  JWT_EXPIRES_IN: "1h"
-  # API rate limiting
-  RATE_LIMIT_WINDOW: "15"
-  RATE_LIMIT_MAX: "100"
+  # External API configuration
+  EXTERNAL_API_TIMEOUT: "30000"
+  EXTERNAL_API_RETRY_COUNT: "3"
   # Environment
   NODE_ENV: "production"
 
@@ -36,9 +29,10 @@ type: Opaque
 data:
   # Base64 encoded secrets (replace with actual values)
   # echo -n "your-secret-value" | base64
-  database-password: cGFzc3dvcmQ= # password
-  jwt-secret: eW91ci1qd3Qtc2VjcmV0LWtleS1yZXBsYWNlLWluLXByb2R1Y3Rpb24= # your-jwt-secret-key-replace-in-production
-  api-key: eW91ci1hcGkta2V5 # your-api-key
+  # External API authentication
+  external-api-key: eW91ci1leHRlcm5hbC1hcGkta2V5 # your-external-api-key
+  # Internal service authentication
+  service-auth-token: eW91ci1zZXJ2aWNlLWF1dGgtdG9rZW4= # your-service-auth-token
 
 ---
 apiVersion: v1
@@ -94,21 +88,16 @@ spec:
                 configMapKeyRef:
                   name: support-console-bff-config
                   key: HEALTH_PORT
-            - name: DATABASE_PASSWORD
+            - name: EXTERNAL_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: support-console-bff-secrets
-                  key: database-password
-            - name: JWT_SECRET
+                  key: external-api-key
+            - name: SERVICE_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: support-console-bff-secrets
-                  key: jwt-secret
-            - name: API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: support-console-bff-secrets
-                  key: api-key
+                  key: service-auth-token
           envFrom:
             - configMapRef:
                 name: support-console-bff-config
