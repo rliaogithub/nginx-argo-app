@@ -4,7 +4,12 @@ kind: Kustomization
 namespace: support-console
 
 resources:
+  - namespace.yaml
+  - configmap.yaml
+  - serviceaccount.yaml
   - deployment.yaml
+  - service.yaml
+  - ingress.yaml
 
 # Common labels for all resources
 commonLabels:
@@ -24,34 +29,10 @@ patchesStrategicMerge:
       template:
         spec:
           containers:
-          - name: support-console
+          - name: primary
             env:
             - name: ENVIRONMENT
               value: "local"
-
-  - |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: support-console-bff
-      namespace: support-console
-    spec:
-      template:
-        spec:
-          containers:
-          - name: support-console-bff
-            env:
-            - name: ENVIRONMENT
-              value: "local"
-
-# Images can be customized here
-images:
-  - name: nginx:1.24-alpine
-    newName: nginx
-    newTag: 1.24-alpine
-  - name: node:18-alpine
-    newName: node
-    newTag: 18-alpine
 
 # Add any additional configuration
 configMapGenerator:
@@ -63,6 +44,4 @@ configMapGenerator:
 # Add resource limits for local development
 replicas:
   - name: support-console
-    count: 1
-  - name: support-console-bff
     count: 1
