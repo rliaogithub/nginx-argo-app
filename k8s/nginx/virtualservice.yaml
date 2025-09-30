@@ -2,16 +2,16 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: nginx
+  name: support-console
   namespace: default
 spec:
   hosts:
-    - nginx.istio.local
+    - support-console.istio.local
   gateways:
     - app-gateway
   http:
     - route:
         - destination:
-            host: nginx.default.svc.cluster.local
+            host: support-console-svc.support-console.svc.cluster.local
             port:
-              number: 80
+              number: 8080

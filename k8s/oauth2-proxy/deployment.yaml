@@ -35,8 +35,8 @@ spec:
             - --redeem-url=http://dex.default.svc.cluster.local:5556/dex/token
             - --oidc-jwks-url=http://dex.default.svc.cluster.local:5556/dex/keys
             - --skip-oidc-discovery=true
-            # Example upstream (protect your nginx app)
-            - --upstream=http://nginx.default.svc.cluster.local:80/
+            # Upstream (protect support-console app)
+            - --upstream=http://support-console-svc.support-console.svc.cluster.local:8080/
             # Extra logging
             - --standard-logging=true
             - --request-logging=true

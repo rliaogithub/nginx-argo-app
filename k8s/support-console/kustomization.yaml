@@ -4,13 +4,13 @@ kind: Kustomization
 namespace: support-console
 
 resources:
-  - support-console-deployment.yaml
-  - support-console-bff-deployment.yaml
+  - deployment.yaml
 
 # Common labels for all resources
 commonLabels:
   project: nginx-argo-app
   environment: local
+  component: frontend
 
 # Patches for local environment customization
 patchesStrategicMerge:

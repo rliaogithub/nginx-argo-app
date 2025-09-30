@@ -13,6 +13,6 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - nginx.istio.local
+        - support-console.istio.local
         - dex.istio.local
         - oauth2-proxy.local

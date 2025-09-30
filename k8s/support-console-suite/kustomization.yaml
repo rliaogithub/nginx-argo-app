@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# This is the top-level kustomization for all support console services
+
+namespace: support-console
+
+resources:
+  - ../support-console/
+  - ../support-console-bff/
+
+# Common labels for all support console resources
+commonLabels:
+  project: nginx-argo-app
+  environment: local
+  suite: support-console
+
+# Shared configuration
+configMapGenerator:
+  - name: support-console-shared-config
+    literals:
+      - SHARED_NAMESPACE=support-console
+      - SHARED_ENVIRONMENT=local
+    options:
+      disableNameSuffixHash: true

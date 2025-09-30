@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: support-console
+
+resources:
+  - deployment.yaml
+
+# Common labels for all resources
+commonLabels:
+  project: nginx-argo-app
+  environment: local
+  component: backend
+
+# Environment-specific patches
+patchesStrategicMerge:
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: support-console-bff
+      namespace: support-console
+    spec:
+      template:
+        spec:
+          containers:
+          - name: support-console-bff
+            env:
+            - name: ENVIRONMENT
+              value: "local"
+
+# Image configuration
+images:
+  - name: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff:2.2.0
+    newName: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff
+    newTag: 2.2.0
+
+# ConfigMap from environment file
+configMapGenerator:
+  - name: support-console-bff-env
+    env: support-console-bff.env
+    options:
+      disableNameSuffixHash: true
