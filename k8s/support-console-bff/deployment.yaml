@@ -1,47 +1,4 @@
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: support-console-bff-config
-  namespace: support-console
-data:
-  # Server configuration
-  PORT: "8080"
-  HEALTH_PORT: "8082"
-  # Logging configuration
-  LOG_LEVEL: "info"
-  LOG_FORMAT: "json"
-  # CORS configuration
-  CORS_ORIGINS: "http://support-console-svc.support-console.svc.cluster.local:8080,https://support-console.local"
-  # External API configuration
-  EXTERNAL_API_TIMEOUT: "30000"
-  EXTERNAL_API_RETRY_COUNT: "3"
-  # Environment
-  NODE_ENV: "production"
-
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: support-console-bff-secrets
-  namespace: support-console
-type: Opaque
-data:
-  # Base64 encoded secrets (replace with actual values)
-  # echo -n "your-secret-value" | base64
-  # External API authentication
-  external-api-key: eW91ci1leHRlcm5hbC1hcGkta2V5 # your-external-api-key
-  # Internal service authentication
-  service-auth-token: eW91ci1zZXJ2aWNlLWF1dGgtdG9rZW4= # your-service-auth-token
-
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: support-console-bff-sa
-  namespace: support-console
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,156 +6,109 @@ metadata:
   namespace: support-console
   labels:
     app: support-console-bff
+    app.kubernetes.io/name: support-console-bff-svc
+    app.beyondtrust.com/team: lakitu
+    app.beyondtrust.com/tier: tier-3
     component: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: support-console-bff
+      app.kubernetes.io/name: support-console-bff-svc
   template:
     metadata:
       labels:
         app: support-console-bff
+        app.kubernetes.io/name: support-console-bff-svc
+        app.beyondtrust.com/team: lakitu
+        app.beyondtrust.com/tier: tier-3
         component: backend
+        security.beyondtrust.com/internal: "true"
+        security.beyondtrust.com/on-the-edge: "true"
+        security.beyondtrust.com/protected: "true"
     spec:
       serviceAccountName: support-console-bff-sa
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
+      securityContext: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: support-console-bff-svc
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       containers:
-        - name: support-console-bff
-          # Replace with your actual BFF image
-          image: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff:2.2.0
-          imagePullPolicy: Always
-          command: ["node", "server.js"]
+        - name: primary
+          image: node:18-alpine
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-              name: http
-            - containerPort: 8082
-              name: health
+              protocol: TCP
           env:
-            - name: PORT
+            - name: OTEL_SERVICE_NAME
               valueFrom:
-                configMapKeyRef:
-                  name: support-console-bff-config
-                  key: PORT
-            - name: HEALTH_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: support-console-bff-config
-                  key: HEALTH_PORT
-            - name: EXTERNAL_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: support-console-bff-secrets
-                  key: external-api-key
-            - name: SERVICE_AUTH_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: support-console-bff-secrets
-                  key: service-auth-token
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: AWS_STS_REGIONAL_ENDPOINTS
+              value: regional
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: AWS_REGION
+              value: us-east-1
           envFrom:
             - configMapRef:
                 name: support-console-bff-config
           livenessProbe:
             httpGet:
-              path: /health/live
-              port: 8082
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
+              path: /app-health/primary/livez
+              port: 15020
+              scheme: HTTP
             failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
           readinessProbe:
             httpGet:
-              path: /health/ready
-              port: 8082
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            timeoutSeconds: 3
+              path: /app-health/primary/readyz
+              port: 15020
+              scheme: HTTP
             failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
           startupProbe:
             httpGet:
-              path: /health/ready
-              port: 8082
-            initialDelaySeconds: 10
+              path: /app-health/primary/startupz
+              port: 15020
+              scheme: HTTP
+            failureThreshold: 3
             periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 30
+            successThreshold: 1
+            timeoutSeconds: 1
           resources:
             requests:
-              memory: "256Mi"
+              memory: "384Mi"
               cpu: "100m"
             limits:
-              memory: "512Mi"
+              memory: "384Mi"
               cpu: "500m"
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+                - all
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
           volumeMounts:
-            - name: app-logs
-              mountPath: /app/logs
-            - name: tmp-volume
-              mountPath: /tmp
-            - name: app-cache
-              mountPath: /app/.cache
+            - mountPath: /app/appsettings.production.json
+              name: appconfig
+              subPath: appsettings.production.json
       volumes:
-        - name: app-logs
-          emptyDir: {}
-        - name: tmp-volume
-          emptyDir: {}
-        - name: app-cache
-          emptyDir: {}
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: support-console-bff-svc
-  namespace: support-console
-  labels:
-    app: support-console-bff
-spec:
-  type: ClusterIP
-  ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
-    - name: health
-      port: 8082
-      targetPort: 8082
-      protocol: TCP
-  selector:
-    app: support-console-bff
-
----
-# HorizontalPodAutoscaler for BFF (optional)
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: support-console-bff-hpa
-  namespace: support-console
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: support-console-bff
-  minReplicas: 1
-  maxReplicas: 5
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80
+        - name: appconfig
+          configMap:
+            name: support-console-bff-config

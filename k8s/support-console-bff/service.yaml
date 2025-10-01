@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: support-console-bff-svc
+  namespace: support-console
+  labels:
+    app: support-console-bff
+    app.kubernetes.io/name: support-console-bff-svc
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: support-console-bff
+    app.kubernetes.io/name: support-console-bff-svc

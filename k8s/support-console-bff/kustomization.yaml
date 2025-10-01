@@ -4,13 +4,14 @@ kind: Kustomization
 namespace: support-console
 
 resources:
+  - configmap.yaml
+  - secret.yaml
+  - serviceaccount.yaml
   - deployment.yaml
+  - service.yaml
+  - hpa.yaml
 
-# Common labels for all resources
-commonLabels:
-  project: nginx-argo-app
-  environment: local
-  component: backend
+# Labels are defined in individual resource files
 
 # Environment-specific patches
 patchesStrategicMerge:
@@ -24,16 +25,12 @@ patchesStrategicMerge:
       template:
         spec:
           containers:
-          - name: support-console-bff
+          - name: primary
             env:
             - name: ENVIRONMENT
               value: "local"
 
-# Image configuration
-images:
-  - name: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff:2.2.0
-    newName: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff
-    newTag: 2.2.0
+# Images are set in deployment.yaml
 
 # ConfigMap from environment file
 configMapGenerator:
