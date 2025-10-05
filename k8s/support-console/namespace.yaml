@@ -1,7 +1,8 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: support-console
-  labels:
-    name: support-console
+# Commented out for troubleshooting
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: support-console
+#   labels:
+#     name: support-console

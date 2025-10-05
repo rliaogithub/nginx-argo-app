@@ -1,0 +1,119 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: support-console
+  namespace: support-console
+  labels:
+    app: support-console
+    app.kubernetes.io/name: support-console-svc
+    app.beyondtrust.com/team: lakitu
+    app.beyondtrust.com/tier: tier-3
+    component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: support-console
+      app.kubernetes.io/name: support-console-svc
+  template:
+    metadata:
+      labels:
+        app: support-console
+        app.kubernetes.io/name: support-console-svc
+        app.beyondtrust.com/team: lakitu
+        app.beyondtrust.com/tier: tier-3
+        component: frontend
+        security.beyondtrust.com/internal: "true"
+        security.beyondtrust.com/on-the-edge: "true"
+        security.beyondtrust.com/protected: "true"
+    spec:
+      serviceAccountName: support-console-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 11236
+        fsGroup: 11236
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: support-console-svc
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      containers:
+        - name: primary
+          image: nginx:1.24-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8181
+              protocol: TCP
+            - containerPort: 8083
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: support-console-config
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - "-c"
+                - "[ -f /run/nginx.pid ]"
+            failureThreshold: 3
+            initialDelaySeconds: 3
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /app-health/primary/readyz
+              port: 15020
+              scheme: HTTP
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /app-health/primary/startupz
+              port: 15020
+              scheme: HTTP
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "1m"
+            limits:
+              memory: "128Mi"
+              cpu: "10m"
+          securityContext:
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: nginx-runtime
+              mountPath: /run
+        - name: metrics
+          image: nginx/nginx-prometheus-exporter:0.11.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9113
+              protocol: TCP
+          env:
+            - name: SCRAPE_URI
+              value: http://127.0.0.1:8083/metrics
+          resources:
+            requests:
+              memory: "140Mi"
+              cpu: "50m"
+            limits:
+              memory: "140Mi"
+              cpu: "75m"
+      volumes:
+        - name: nginx-runtime
+          emptyDir: {}

@@ -1,46 +1,47 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+# apiVersion: kustomize.config.k8s.io/v1beta1
+# kind: Kustomization
 
-namespace: support-console
+# namespace: support-console
 
-resources:
-  - namespace.yaml
-  - configmap.yaml
-  - serviceaccount.yaml
-  - deployment.yaml
-  - service.yaml
+# resources:
+#   - namespace.yaml
+#   - configmap.yaml
+#   - nginx-config.yaml
+#   - serviceaccount.yaml
+#   - deployment.yaml
+#   - service.yaml
 
-# Common labels for all resources
-commonLabels:
-  project: nginx-argo-app
-  environment: local
-  component: frontend
+# # Common labels for all resources
+# commonLabels:
+#   project: nginx-argo-app
+#   environment: local
+#   component: frontend
 
-# Patches for local environment customization
-patchesStrategicMerge:
-  - |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: support-console
-      namespace: support-console
-    spec:
-      template:
-        spec:
-          containers:
-          - name: primary
-            env:
-            - name: ENVIRONMENT
-              value: "local"
+# # Patches for local environment customization
+# patchesStrategicMerge:
+#   - |-
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     metadata:
+#       name: support-console
+#       namespace: support-console
+#     spec:
+#       template:
+#         spec:
+#           containers:
+#           - name: primary
+#             env:
+#             - name: ENVIRONMENT
+#               value: "local"
 
-# Add any additional configuration
-configMapGenerator:
-  - name: support-console-env
-    env: support-console.env
-    options:
-      disableNameSuffixHash: true
+# # Add any additional configuration
+# configMapGenerator:
+#   - name: support-console-env
+#     env: support-console.env
+#     options:
+#       disableNameSuffixHash: true
 
-# Add resource limits for local development
-replicas:
-  - name: support-console
-    count: 1
+# # Add resource limits for local development
+# replicas:
+#   - name: support-console
+#     count: 1

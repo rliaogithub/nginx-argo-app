@@ -2,5 +2,5 @@
 resources:
   - istio/gateway.yaml
   - nginx/
-  - support-console/
+  # - support-console/  # Commented out for troubleshooting
   - support-console-bff/
