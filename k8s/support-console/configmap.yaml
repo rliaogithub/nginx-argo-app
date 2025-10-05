@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: support-console-config
+  namespace: support-console
+data:
+  # Server configuration
+  PORT: "80"
+  # Environment
+  NODE_ENV: "production"
+  # Nginx configuration (if applicable)
+  NGINX_PORT: "80"
+  # Logging configuration
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"# Commented out for troubleshooting

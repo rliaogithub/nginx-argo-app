@@ -20,13 +20,13 @@ patchesStrategicMerge:
     apiVersion: apps/v1
     kind: Deployment
     metadata:
-      name: support-console-bff
+      name: support-console
       namespace: support-console
     spec:
       template:
         spec:
           containers:
-          - name: support-console-bff
+          - name: support-console
             env:
             - name: ENVIRONMENT
               value: "local"
@@ -35,7 +35,7 @@ patchesStrategicMerge:
 
 # ConfigMap from environment file
 configMapGenerator:
-  - name: support-console-bff-env
-    env: support-console-bff.env
+  - name: support-console-env
+    env: support-console.env
     options:
       disableNameSuffixHash: true

@@ -2,22 +2,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: support-console-bff
+  name: support-console
   namespace: support-console
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: support-console-bff
+      app: support-console
   template:
     metadata:
       labels:
-        app: support-console-bff
+        app: support-console
     spec:
       imagePullSecrets:
         - name: beyondtrust-registry-secret
       containers:
-        - name: support-console-bff
-          image: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff:2.2.0
+        - name: support-console
+          image: beyondtrust-docker.jfrog.io/beyondtrust/nomine/support-console:2.23.0
           ports:
-            - containerPort: 8080
+            - containerPort: 80

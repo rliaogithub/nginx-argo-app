@@ -13,8 +13,20 @@ This directory contains ArgoCD Application manifests for managing authentication
   - Auto-sync enabled
 
 - **`oauth2-proxy-application.yaml`** - OAuth2-Proxy Authentication Gateway
+
   - Source: `k8s/oauth2-proxy/`
   - Namespace: `default`
+  - Auto-sync enabled
+
+- **`support-console-bff-application.yaml`** - Support Console Backend for Frontend
+
+  - Source: `k8s/support-console-bff/`
+  - Namespace: `support-console`
+  - Auto-sync enabled
+
+- **`support-console-application.yaml`** - Support Console Frontend
+  - Source: `k8s/support-console/`
+  - Namespace: `support-console`
   - Auto-sync enabled
 
 ### App-of-Apps Pattern
@@ -30,6 +42,8 @@ This directory contains ArgoCD Application manifests for managing authentication
 ```bash
 kubectl apply -f argocd-apps/dex-application.yaml
 kubectl apply -f argocd-apps/oauth2-proxy-application.yaml
+kubectl apply -f argocd-apps/support-console-bff-application.yaml
+kubectl apply -f argocd-apps/support-console-application.yaml
 ```
 
 ### Option 2: Deploy All Services via App-of-Apps
