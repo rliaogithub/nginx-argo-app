@@ -16,12 +16,6 @@ spec:
     spec:
       containers:
         - name: support-console-bff
-          image: node:18-alpine
-          command:
-            [
-              "node",
-              "-e",
-              "const http = require('http'); const server = http.createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/plain'}); res.end('Hello from support-console-bff\\n'); }); server.listen(8080, '0.0.0.0', () => { console.log('Server running on port 8080'); });",
-            ]
+          image: beyondtrust-docker.jfrog.io/beyondtrust/support-console-bff:2.2.0
           ports:
             - containerPort: 8080
