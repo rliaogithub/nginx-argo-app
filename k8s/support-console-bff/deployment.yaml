@@ -4,111 +4,24 @@ kind: Deployment
 metadata:
   name: support-console-bff
   namespace: support-console
-  labels:
-    app: support-console-bff
-    app.kubernetes.io/name: support-console-bff-svc
-    app.beyondtrust.com/team: lakitu
-    app.beyondtrust.com/tier: tier-3
-    component: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: support-console-bff
-      app.kubernetes.io/name: support-console-bff-svc
   template:
     metadata:
       labels:
         app: support-console-bff
-        app.kubernetes.io/name: support-console-bff-svc
-        app.beyondtrust.com/team: lakitu
-        app.beyondtrust.com/tier: tier-3
-        component: backend
-        security.beyondtrust.com/internal: "true"
-        security.beyondtrust.com/on-the-edge: "true"
-        security.beyondtrust.com/protected: "true"
     spec:
-      serviceAccountName: support-console-bff-sa
-      securityContext: {}
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: support-console-bff-svc
-                topologyKey: kubernetes.io/hostname
-              weight: 100
       containers:
-        - name: primary
+        - name: support-console-bff
           image: node:18-alpine
-          imagePullPolicy: IfNotPresent
+          command:
+            [
+              "node",
+              "-e",
+              "const http = require('http'); const server = http.createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/plain'}); res.end('Hello from support-console-bff\\n'); }); server.listen(8080, '0.0.0.0', () => { console.log('Server running on port 8080'); });",
+            ]
           ports:
             - containerPort: 8080
-              protocol: TCP
-          env:
-            - name: OTEL_SERVICE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.labels['app.kubernetes.io/name']
-            - name: AWS_STS_REGIONAL_ENDPOINTS
-              value: regional
-            - name: AWS_DEFAULT_REGION
-              value: us-east-1
-            - name: AWS_REGION
-              value: us-east-1
-          envFrom:
-            - configMapRef:
-                name: support-console-bff-config
-          livenessProbe:
-            httpGet:
-              path: /app-health/primary/livez
-              port: 15020
-              scheme: HTTP
-            failureThreshold: 3
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          readinessProbe:
-            httpGet:
-              path: /app-health/primary/readyz
-              port: 15020
-              scheme: HTTP
-            failureThreshold: 3
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          startupProbe:
-            httpGet:
-              path: /app-health/primary/startupz
-              port: 15020
-              scheme: HTTP
-            failureThreshold: 3
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          resources:
-            requests:
-              memory: "384Mi"
-              cpu: "100m"
-            limits:
-              memory: "384Mi"
-              cpu: "500m"
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - all
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-          volumeMounts:
-            - mountPath: /app/appsettings.production.json
-              name: appconfig
-              subPath: appsettings.production.json
-      volumes:
-        - name: appconfig
-          configMap:
-            name: support-console-bff-config

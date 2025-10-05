@@ -25,7 +25,7 @@ patchesStrategicMerge:
       template:
         spec:
           containers:
-          - name: primary
+          - name: support-console-bff
             env:
             - name: ENVIRONMENT
               value: "local"
