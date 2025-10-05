@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: support-console-bff-service
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rliaogithub/nginx-argo-app.git
+    targetRevision: HEAD
+    path: k8s/support-console-bff
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: support-console
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

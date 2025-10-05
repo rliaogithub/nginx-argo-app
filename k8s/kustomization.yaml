@@ -3,4 +3,4 @@ resources:
   - istio/gateway.yaml
   - nginx/
   # - support-console/  # Commented out for troubleshooting
-  - support-console-bff/
+  # - support-console-bff/  # Moved to independent ArgoCD application
