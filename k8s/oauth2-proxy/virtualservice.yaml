@@ -9,20 +9,20 @@ spec:
   gateways:
     - app-gateway
   http:
-    # 1) Drop malicious X-Forwarded-Uri (generic interaction domains)
+    # 1) Drop malicious X-Forwarded-Uri
     - match:
         - headers:
             x-forwarded-uri:
-              regex: "(?i)^.*(?:interact\\.sploit|burpcollaborator|oast|dnslog|https?://).*$"
+              regex: "(?i)(interact\\.sploit|burpcollaborator|dnslog|[a-z][a-z0-9+.-]*://)"
       directResponse:
         status: 404
         body: { string: "Not Found" }
 
-    # 2) Drop abusive rd= redirect params (external URLs / interaction domains)
+    # 2) Drop abusive rd= redirect params (block absolute URLs and suspicious domains)
     - match:
         - queryParams:
             rd:
-              regex: "(?i)^.*(?:interact\\.sploit|burpcollaborator|oast|dnslog|https?://).*$"
+              regex: "(?i)(?:^(?:[a-z][a-z0-9+.-]*://|//|[a-z][a-z0-9+.-]*%3a%2f%2f|%2f%2f)|interact\\.sploit|burpcollaborator|dnslog)"
       directResponse:
         status: 404
         body: { string: "Not Found" }
