@@ -9,7 +9,28 @@ spec:
   gateways:
     - app-gateway
   http:
-    - route:
+    # 1) Drop malicious X-Forwarded-Uri (generic interaction domains)
+    - match:
+        - headers:
+            x-forwarded-uri:
+              regex: "(?i)^.*(?:interact\\.sploit|burpcollaborator|oast|dnslog|https?://).*$"
+      directResponse:
+        status: 404
+        body: { string: "Not Found" }
+
+    # 2) Drop abusive rd= redirect params (external URLs / interaction domains)
+    - match:
+        - queryParams:
+            rd:
+              regex: "(?i)^.*(?:interact\\.sploit|burpcollaborator|oast|dnslog|https?://).*$"
+      directResponse:
+        status: 404
+        body: { string: "Not Found" }
+
+    - match:
+        - uri:
+            prefix: /oauth2/
+      route:
         - destination:
             host: oauth2-proxy.default.svc.cluster.local
             port:
