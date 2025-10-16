@@ -9,7 +9,7 @@ spec:
   gateways:
     - app-gateway
   http:
-    # 1) Drop malicious X-Forwarded-Uri
+    # 1) Header filtering (drop malicious X-Forwarded-Uri)
     - match:
         - headers:
             x-forwarded-uri:
@@ -18,7 +18,7 @@ spec:
         status: 404
         body: { string: "Not Found" }
 
-    # 2) Drop abusive rd= redirect params (block absolute URLs and suspicious domains)
+    # 2) Querystring filtering (block absolute URLs and suspicious domains)
     - match:
         - queryParams:
             rd:
